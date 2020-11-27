@@ -1,6 +1,6 @@
 
 const sizes = ['small', 'medium', 'large'];
-const numInputsPerSize = [242, 240, 236];
+const numInputsPerSize = [242, 242, 242];
 const broken_files = ['large-135', 'medium-219', 'large-219', 'large-218', 'large-208', 'large-224', 'medium-225', 'large-235']
 
 let teamSet = new Set();
