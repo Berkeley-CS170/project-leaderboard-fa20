@@ -67,11 +67,11 @@
       </div>
 
     <!--Leaderboard JS-->
+    <script src="leaderboard.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.14.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.14.0/firebase-analytics.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.14.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.14.0/firebase-database.js"></script>
-    <script src="leaderboard.js"></script>
     <script>
 
     var firebaseConfig = {
@@ -81,11 +81,12 @@
     projectId: "cs-170-project-fall-2020",
     storageBucket: "cs-170-project-fall-2020.appspot.com",
     messagingSenderId: "77448687700",
-    appId: "1:77448687700:web:ec6302fb91876add7e3dc1"
+    appId: "1:77448687700:web:ec6302fb91876add7e3dc1",
+    measurementId: "G-XG5HWJ35CL"
   };
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-    // firebase.analytics();
+    firebase.analytics();
 
     async function refresh(graphName) {
         document.getElementById("table").innerHTML = '<div class="loader"></div>';
