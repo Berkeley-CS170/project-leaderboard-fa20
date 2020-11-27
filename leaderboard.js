@@ -64,6 +64,8 @@ async function computeFullLeaderboard(firebase) {
       const size = sizes[i];
       for (let j = 1; j <= numInputsPerSize[i]; j++) {
         const graphName = `${size}-${j}`;
+        if graphName not in leaderboards:
+          continue
         const leaderboard = leaderboards[graphName].sort((elem1, elem2) => elem1[1] - elem2[1]);
         const ranks = getRanks(leaderboard);
         for (let i = 0; i < leaderboard.length; i++) {
