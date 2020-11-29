@@ -37,7 +37,7 @@ async function pullLeaderboard(graphName, firebase) {
         teamSet.add(name);
       });
     });
-    return entries.sort((elem1, elem2) => elem1[2] - elem2[1]);
+    return entries.sort((elem1, elem2) => elem2[1] - elem1[1]);
 }
 
 async function pullFullLeaderboard(firebase) {
