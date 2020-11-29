@@ -37,7 +37,7 @@ async function pullLeaderboard(graphName, firebase) {
         teamSet.add(name);
       });
     });
-    return entries.sort((elem1, elem2) => elem1[1] - elem2[1]);
+    return entries.sort((elem1, elem2) => elem1[2] - elem2[1]);
 }
 
 async function pullFullLeaderboard(firebase) {
@@ -66,7 +66,7 @@ async function computeFullLeaderboard(firebase) {
       for (let j = 1; j <= numInputsPerSize[i]; j++) {
         const graphName = `${size}-${j}`;
         if (broken_files.includes(graphName)) {continue;}
-        const leaderboard = leaderboards[graphName].sort((elem1, elem2) => elem1[1] - elem2[1]);
+        const leaderboard = leaderboards[graphName].sort((elem1, elem2) => elem2[1] - elem1[1]);
         const ranks = getRanks(leaderboard);
         for (let i = 0; i < leaderboard.length; i++) {
           entry = leaderboard[i];
