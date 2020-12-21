@@ -51,7 +51,7 @@ async function pullLeaderboard(graphName) {
             entries.push([entry['leaderboard_name'], round(entry['score'])]);
         }
     }
-    return entries;
+    return entries.sort((elem1, elem2) => elem2[1] - elem1[1]);
 }
 
 async function pullFullLeaderboard(firebase) {
