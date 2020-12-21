@@ -4,61 +4,78 @@ const numInputsPerSize = [242, 242, 242];
 const broken_files = ['large-135', 'medium-219', 'large-219', 'large-218', 'large-208', 'large-224', 'medium-225', 'large-235']
 
 let teamSet = new Set();
+let firebaseData = null;
 
-async function loadTeams(firebase) {
-  const teamSet = new Set();
-  await firebase.database().ref("leaderboard").orderByChild("leaderboard_name").once("value",
-  function(snapshot) {
-    snapshot.forEach(function (item) {
-      teamSet.add(item.val()["leaderboard_name"]);
-    });
-  });
+async function getFirebaseData() {
+    const response = await fetch('https://drive.google.com/uc?export=download&id=1Q8Aka9AAwLNWxjXyvLn69M2GsH8N_kZo');
+    const data = await response.json();
+    console.log(data['teams']);
+    return data;
 }
 
-async function loadAutocomplete(input, firebase) {
+async function loadTeams() {
+  teamSet = new Set();
+  if (firebaseData == null) {
+      firebaseData = await getFirebaseData();
+  }
+  for (let key in firebaseData['leaderboard']) {
+    const item = firebaseData['leaderboard'][key];
+    teamSet.add(item["leaderboard_name"]);
+  }
+  return teamSet;
+}
+
+async function loadAutocomplete(input) {
   if (!teamSet.size) {
-    teams = await loadTeams(firebase);
+    teams = await loadTeams();
     console.warn("Teams not loaded, check pullLeaderboard functions.");
   }
   new Awesomplete(input, {list: Array.from(teamSet)});
 }
 
+
 function round(x) {
     return Math.round((x + Number.EPSILON) * 10000) / 10000;
 }
 
-async function pullLeaderboard(graphName, firebase) {
+async function pullLeaderboard(graphName) {
+    if (firebaseData == null) {
+        firebaseData = await getFirebaseData();
+    }
+
     const entries = [];
-    await firebase.database().ref("leaderboard").orderByChild("input").equalTo(graphName).once("value", function(snapshot) {
-      snapshot.forEach(function(item) {
-        const name = item.val()["leaderboard_name"];
-        const score = round(item.val()["score"]);
-        entries.push([name, score]);
-        teamSet.add(name);
-      });
-    });
-    return entries.sort((elem1, elem2) => elem2[1] - elem1[1]);
+
+    for (let key in firebaseData['leaderboard']) {
+        const entry = firebaseData['leaderboard'][key];
+        if (entry['input'] == graphName) {
+            entries.push([entry['leaderboard_name'], round(entry['score'])]);
+        }
+    }
+    return entries;
 }
 
 async function pullFullLeaderboard(firebase) {
+    if (firebaseData == null) {
+        firebaseData = await getFirebaseData();
+    }
+
     const leaderboards = {};
-    await firebase.database().ref("leaderboard").orderByChild("input").once("value", function(snapshot) {
-      snapshot.forEach(function(item) {
-        const name = item.val()["leaderboard_name"];
-        const inputName = item.val()["input"];
-        const score = round(item.val()["score"]);
+
+    for (let key in firebaseData['leaderboard']) {
+        const entry = firebaseData['leaderboard'][key];
+        const name = entry['leaderboard_name'];
+        const score = round(entry['score']);
+        const inputName = entry['input'];
         if (!leaderboards.hasOwnProperty(inputName)) {
             leaderboards[inputName] = [];
         }
         leaderboards[inputName].push([name, score]);
-        teamSet.add(name);
-      });
-    });
+    }
     return leaderboards;
 }
 
-async function computeFullLeaderboard(firebase) {
-    const leaderboards = await pullFullLeaderboard(firebase);
+async function computeFullLeaderboard() {
+    const leaderboards = await pullFullLeaderboard();
     const namesAndRanks = {};
     let totalInputs = 0;
     for (let i = 0; i < sizes.length; i++) {
@@ -166,14 +183,14 @@ function createTeamView(teamEntries, teamName) {
   );
 }
 
-async function generateRanksForTeam(teamName, firebase) {
-  fullLeaderboardResults = await computeFullLeaderboard(firebase);
+async function generateRanksForTeam(teamName) {
+  fullLeaderboardResults = await computeFullLeaderboard();
   namesAndRanks = fullLeaderboardResults[0];
   return namesAndRanks.hasOwnProperty(teamName) ? namesAndRanks[teamName] : null;
 }
 
-async function generateTeamView(teamName, firebase) {
-   const entries = await generateRanksForTeam(teamName, firebase);
+async function generateTeamView(teamName) {
+   const entries = await generateRanksForTeam(teamName);
    document.getElementById("table").innerHTML = '';
    if (entries == null) {
      const div = document.createElement('h1');
@@ -185,12 +202,12 @@ async function generateTeamView(teamName, firebase) {
    }
 }
 
-async function generateLeaderboard(graphName, firebase) {
+async function generateLeaderboard(graphName) {
     let entries = null;
     let header = null;
     let title = null;
     if (graphName === null) {
-      fullLeaderboardResults = await computeFullLeaderboard(firebase);
+      fullLeaderboardResults = await computeFullLeaderboard();
       entries = fullLeaderboardResults[1];
       header = ["#", "Team Name", "Average Rank"];
       title = "";
