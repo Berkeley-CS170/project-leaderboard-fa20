@@ -7,7 +7,7 @@ let teamSet = new Set();
 let firebaseData = null;
 
 async function getFirebaseData() {
-    const response = await fetch('https://drive.google.com/uc?export=download&id=1Q8Aka9AAwLNWxjXyvLn69M2GsH8N_kZo');
+    const response = await fetch('https://www.dl.dropboxusercontent.com/s/n63dsxtk4heuqw4/cs-170-project-fall-2020-export.json?dl=1');
     const data = await response.json();
     console.log(data['teams']);
     return data;
