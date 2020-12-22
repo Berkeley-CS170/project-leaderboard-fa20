@@ -5,6 +5,7 @@ const broken_files = ['large-135', 'medium-219', 'large-219', 'large-218', 'larg
 
 let teamSet = new Set();
 let firebaseData = null;
+var dict = {}
 
 async function getFirebaseData() {
     const response = await fetch('https://www.dl.dropboxusercontent.com/s/n63dsxtk4heuqw4/cs-170-project-fall-2020-export.json?dl=1');
@@ -100,11 +101,30 @@ async function computeFullLeaderboard() {
       }
     }
     const finalEntries = [];
+    const not_full_outputs = [];
     for (let name in namesAndRanks) {
+      const base_scores = namesAndRanks['Welcome_To_The_Leaderboard'];
       const scores = namesAndRanks[name];
       test = scores;
       if (scores.length == totalInputs) {
         const average = scores.reduce((a, b) => a + b[1], 0) / totalInputs;
+        finalEntries.push([name, round(average)]);
+      } else {
+        not_full_outputs.push(name);
+        var score = 0;
+        for (let i = 0; i < base_scores.length; i++) {
+          var found = false;
+          for (let j = 0; j < scores.length; j++) {
+            if (base_scores[i][0] === scores[j][0]) {
+              score = score + scores[j][1];
+              found = true;
+            }
+          }
+          if (!found) {
+            score = score + base_scores[i][1];
+          }
+        }
+        const average = score / totalInputs;
         finalEntries.push([name, round(average)]);
       }
     }
@@ -124,7 +144,6 @@ function getRanks(sortedEntries) {
           currentRank = i + 1;
           prevValue = entry[1];
         }
-
         ranks.push(currentRank);
     }
     return ranks;
@@ -144,9 +163,11 @@ function formatTable(sortedEntries, header, addRanks) {
   }
   for (let i = 0; i < sortedEntries.length; i++) {
       const row = document.createElement('tr');
+      var currentRank = 0
       entry = sortedEntries[i];
       if (addRanks) {
-        const currentRank = ranks[i];
+        currentRank = ranks[i];
+        dict[entry[0]] = currentRank
         const rank = document.createElement('th');
         rank.innerHTML = currentRank;
         row.appendChild(rank);
@@ -158,6 +179,7 @@ function formatTable(sortedEntries, header, addRanks) {
       }
       table.appendChild(row);
   }
+  // console.log(dict)
   return table;
 }
 
@@ -212,7 +234,7 @@ async function generateLeaderboard(graphName) {
       header = ["#", "Team Name", "Average Rank"];
       title = "";
     } else {
-      entries = await pullLeaderboard(graphName, firebase);
+      entries = await pullLeaderboard(graphName);
       if (entries.length > 0) {
         header = ["#", "Team Name", "Happiness"];
         title = `<code>${graphName}.in</code>`;
